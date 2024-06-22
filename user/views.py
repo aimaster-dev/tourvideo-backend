@@ -18,7 +18,7 @@ class UserAPIView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response({"status": True, "data": "User Registered Successfully."}, status = status.HTTP_201_CREATED)
-        return Response({"status": False, "data": "Email is already used now."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": False, "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self, request, pk, format=None):
         print(pk)
@@ -53,7 +53,9 @@ class UserLoginAPIView(APIView):
     def post(self, request):
         serializer = UserLoginSerializer(data = request.data)
         if serializer.is_valid():
-            if serializer.validated_data['status'] == False and serializer.validated_data['user_type'] == 2:
+            print(serializer.validated_data['status'])
+            print(serializer.validated_data['usertype'])
+            if serializer.validated_data['status'] == False and serializer.validated_data['usertype'] == 2:
                 return Response({"status": False, "data": {"msg": "Please wait until admin allows you"}}, status=status.HTTP_423_LOCKED)
             else:
                 return Response({"status": True, "data": serializer.validated_data}, status=status.HTTP_200_OK)
