@@ -13,11 +13,12 @@ class UserRegUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'phone_number', 'user_type', 'street', 'country', 'city', 'zipcode', 'state', 'get_same_video', 'appears_in_others_video', 'voice_can_be_recorded', 'be_shown_potential', 'be_shown_public_business', 'be_shown_social_media')
+        fields = ('username', 'email', 'password', 'phone_number', 'user_type', 'street', 'country', 'city', 'zipcode', 'state', 'get_same_video', 'status', 'appears_in_others_video', 'voice_can_be_recorded', 'be_shown_potential', 'be_shown_public_business', 'be_shown_social_media')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
+        print(user)
         return user
     
     def update(self, instance, validated_data):
@@ -54,8 +55,8 @@ class UserLoginSerializer(serializers.Serializer):
         # print(data['password'])
         user = authenticate(email=data['email'], password=data['password'])
         # print(user)
-        # if user and user.created_at + datetime.timedelta(hours=4) > datetime.datetime.now():
-        if user and user.is_active:
+        if user and user.created_at + datetime.timedelta(hours=4) > datetime.datetime.now():
+        # if user and user.is_active:
             refresh = RefreshToken.for_user(user)
             access = refresh.access_token
 

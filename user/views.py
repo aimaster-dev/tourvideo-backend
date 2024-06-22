@@ -13,6 +13,8 @@ class UserAPIView(APIView):
 
     def post(self, request):
         serializer = UserRegUpdateSerializer(data = request.data)
+        print(serializer)
+        print(serializer.is_valid())
         if serializer.is_valid():
             serializer.save()
             return Response({"status": True, "data": "User Registered Successfully."}, status = status.HTTP_201_CREATED)
