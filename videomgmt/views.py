@@ -12,7 +12,7 @@ class HeaderAPIView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     
     def get_queryset(self):
-        if self.request.user.user_type == 1:
+        if self.request.user.usertype == 1:
             return Header.objects.all()
         return Header.objects.filter(user=self.request.user)
     

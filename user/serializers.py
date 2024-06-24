@@ -52,15 +52,10 @@ class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField()
 
     def validate(self, data):
-        # print(data['email'])
-        # print(data['password'])
         user = authenticate(email=data['email'], password=data['password'])
-        # print(user)
-        if user and user.created_at + datetime.timedelta(hours=4) > timezone.now():
-        # if user and user.is_active:
+        if user and user.created_at + datetime.timedelta(hours=4) < timezone.now():
             refresh = RefreshToken.for_user(user)
             access = refresh.access_token
-
             return {
                 'refresh': str(refresh),
                 'access': str(access),
