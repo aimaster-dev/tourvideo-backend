@@ -6,6 +6,7 @@ from .models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
+from django.utils import timezone
 from rest_framework import serializers
 
 class UserRegUpdateSerializer(serializers.ModelSerializer):
@@ -13,7 +14,7 @@ class UserRegUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'phone_number', 'user_type', 'street', 'country', 'city', 'zipcode', 'state', 'get_same_video', 'status', 'appears_in_others_video', 'voice_can_be_recorded', 'be_shown_potential', 'be_shown_public_business', 'be_shown_social_media')
+        fields = ('username', 'email', 'password', 'phone_number', 'usertype', 'street', 'country', 'city', 'zipcode', 'state', 'get_same_video', 'status', 'appears_in_others_video', 'voice_can_be_recorded', 'be_shown_potential', 'be_shown_public_business', 'be_shown_social_media')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -25,7 +26,7 @@ class UserRegUpdateSerializer(serializers.ModelSerializer):
         instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
         instance.phone_number = validated_data.get('phone_number', instance.phone_number)
-        instance.user_type = validated_data.get('user_type', instance.user_type)
+        instance.usertype = validated_data.get('usertype', instance.usertype)
         instance.street = validated_data.get('street', instance.street)
         instance.country = validated_data.get('country', instance.country)
         instance.city = validated_data.get('city', instance.city)
@@ -43,7 +44,7 @@ class UserRegUpdateSerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'phone_number', 'user_type', 'street', 'country', 'city', 'zipcode', 'state', 'get_same_video', 'appears_in_others_video', 'voice_can_be_recorded', 'be_shown_potential', 'be_shown_public_business', 'be_shown_social_media']  # Exclude 'password'
+        fields = ['username', 'email', 'phone_number', 'usertype', 'street', 'country', 'city', 'zipcode', 'state', 'get_same_video', 'appears_in_others_video', 'voice_can_be_recorded', 'be_shown_potential', 'be_shown_public_business', 'be_shown_social_media']  # Exclude 'password'
         read_only_fields = fields
 
 class UserLoginSerializer(serializers.Serializer):
@@ -51,22 +52,18 @@ class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField()
 
     def validate(self, data):
-        # print(data['email'])
-        # print(data['password'])
         user = authenticate(email=data['email'], password=data['password'])
-        # print(user)
         if user:
             if user.user_type == 3 and user.created_at + datetime.timedelta(hours=4) < datetime.datetime.now():
                 raise serializers.ValidationError("Your account is expired now.")
         # if user and user.is_active:
             refresh = RefreshToken.for_user(user)
             access = refresh.access_token
-
             return {
                 'refresh': str(refresh),
                 'access': str(access),
                 'user_id': user.id,
-                'user_type': user.user_type,
+                'usertype': user.usertype,
                 'username': user.username,
                 'status' : user.status,
             }
