@@ -55,7 +55,9 @@ class UserLoginSerializer(serializers.Serializer):
         # print(data['password'])
         user = authenticate(email=data['email'], password=data['password'])
         # print(user)
-        if user and user.created_at + datetime.timedelta(hours=4) > datetime.datetime.now():
+        if user:
+            if user.user_type == 3 and user.created_at + datetime.timedelta(hours=4) < datetime.datetime.now():
+                raise serializers.ValidationError("Your account is expired now.")
         # if user and user.is_active:
             refresh = RefreshToken.for_user(user)
             access = refresh.access_token
