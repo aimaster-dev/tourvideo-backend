@@ -23,7 +23,7 @@ class CameraAPIView(APIView):
     def post(self, request):
         serializer = CameraSerializer(data = request.data)
         if serializer.is_valid():
-            serializer.save(customer = request.user)
+            serializer.save(isp = request.user)
             return Response({"status": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
         return Response({"status": False, "data": {"msg": serializer.errors["non_field_errors"][0]}}, status=status.HTTP_400_BAD_REQUEST)
     
@@ -31,9 +31,9 @@ class CameraUpdateAPIView(APIView):
     permission_classes = [IsISP]
     parser_classes = (MultiPartParser, FormParser)
     
-    def get(self, request):
+    def get(self, request, pk, format=None):
         isp = request.user
-        camera_id = request.query_params.get('id')
+        camera_id = pk
         if isp is not None:
             camera = Camera.objects.get(isp=isp, id = camera_id)
             serializer = CameraSerializer(camera)
@@ -50,6 +50,7 @@ class CameraUpdateAPIView(APIView):
                 "camera_name": data.get("camera_name"),
                 "camera_ip": data.get("camera_ip"),
                 "camera_port": data.get("camera_port"),
+                "camera_user_name": data.get("camera_user_name"),
                 "password": data.get("password")
             }
             serializer = CameraSerializer(camera, data=data, partial=True)

@@ -14,5 +14,5 @@ class IsClerk(permissions.BasePermission):
     
 class IsAdminOrISP(permissions.BasePermission):
     def has_permission(self, request, view):
-        # Assuming usertype of 1 is Admin and 2 is Customer
+        # Assuming usertype of 1 is Admin and 2 is ISP
         return request.user.is_authenticated and request.user.usertype in [1, 2]
