@@ -13,7 +13,11 @@ class CameraAPIView(APIView):
 
     def get(self, request):
         isp = request.user
-        if isp is not None:
+        if isp.usertype == 1:
+            cameras = Camera.objects.all()
+            serializer = CameraSerializer(cameras, many=True)
+            return Response({'status': True, 'data': serializer.data})
+        elif isp is not None:
             cameras = Camera.objects.filter(isp=isp.pk)
             serializer = CameraSerializer(cameras, many=True)
             return Response({'status': True, 'data': serializer.data})
