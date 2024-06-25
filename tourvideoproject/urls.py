@@ -20,5 +20,6 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('api/v1/user/', include('user.urls')),
-    path('api/v1/video/', include('videomgmt.urls'))
+    path('api/v1/video/', include('videomgmt.urls')),
+    path('api/v1/camera/', include('camera.urls'))
 ]

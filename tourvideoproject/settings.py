@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'user',
     'videomgmt',
+    'camera',
     'rest_framework'
 ]
 

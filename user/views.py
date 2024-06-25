@@ -78,7 +78,7 @@ class UserUpdateAPIView(APIView):
             return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
         return Response({"status": False, "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
-class UserRangeListAPIView(ListAPIView):
+class ISPRangeListAPIView(ListAPIView):
     serializer_class = UserListSerializer
     permission_classes = [IsAdmin]  # Assuming you want this endpoint to be protected
 
@@ -87,7 +87,26 @@ class UserRangeListAPIView(ListAPIView):
         Optionally restricts the returned users to a given range,
         by filtering against a `start_row_index` and `end_row_index` query parameter in the URL.
         """
-        queryset = User.objects.all()
+        queryset = User.objects.filter(usertype = 2)
+        start_row_index = self.request.query_params.get('start_row_index', None)
+        end_row_index = self.request.query_params.get('end_row_index', None)
+
+        if start_row_index is not None and end_row_index is not None:
+            start_row_index = int(start_row_index)
+            end_row_index = int(end_row_index)
+            return queryset[start_row_index:end_row_index]
+        return queryset
+    
+class ClientRangeListAPIView(ListAPIView):
+    serializer_class = UserListSerializer
+    permission_classes = [IsAdmin]  # Assuming you want this endpoint to be protected
+
+    def get_queryset(self):
+        """
+        Optionally restricts the returned users to a given range,
+        by filtering against a `start_row_index` and `end_row_index` query parameter in the URL.
+        """
+        queryset = User.objects.filter(usertype = 3)
         start_row_index = self.request.query_params.get('start_row_index', None)
         end_row_index = self.request.query_params.get('end_row_index', None)
 
