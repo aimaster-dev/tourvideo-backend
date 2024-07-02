@@ -14,7 +14,7 @@ class UserRegUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'phone_number', 'usertype', 'street', 'country', 'city', 'zipcode', 'state', 'get_same_video', 'status', 'appears_in_others_video', 'voice_can_be_recorded', 'be_shown_potential', 'be_shown_public_business', 'be_shown_social_media')
+        fields = ('username', 'email', 'password', 'phone_number', 'usertype', 'street', 'country', 'city', 'zipcode', 'state', 'get_same_video', 'status', 'appears_in_others_video', 'voice_can_be_recorded', 'be_shown_potential', 'be_shown_public_business', 'be_shown_social_media', 'is_active')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):

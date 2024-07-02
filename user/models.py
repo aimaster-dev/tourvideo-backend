@@ -40,6 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     be_shown_public_business = models.BooleanField(default=True)
     be_shown_social_media = models.BooleanField(default=True)
     status = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 

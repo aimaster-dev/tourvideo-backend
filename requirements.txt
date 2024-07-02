@@ -4,6 +4,7 @@ charset-normalizer==3.3.2
 colorama==0.4.6
 decorator==4.4.2
 Django==5.0.6
+django-allauth==0.63.3
 django-cors-headers==4.4.0
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
@@ -17,6 +18,7 @@ proglog==0.1.10
 PyJWT==2.8.0
 requests==2.32.3
 setuptools==70.1.0
+six==1.16.0
 sqlparse==0.5.0
 tqdm==4.66.4
 tzdata==2024.1

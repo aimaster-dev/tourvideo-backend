@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserAPIView, UserDeleteAPIView, UserLoginAPIView, ISPRangeListAPIView, ClientRangeListAPIView, UserUpdateAPIView
+from .views import UserAPIView, UserDeleteAPIView, UserLoginAPIView, ISPRangeListAPIView, ClientRangeListAPIView, UserUpdateAPIView, ActivateAccount, ResendActivationEmail
 
 urlpatterns = [
     path('register', UserAPIView.as_view(), name = 'auth_register'),
@@ -8,5 +8,7 @@ urlpatterns = [
     path('update', UserUpdateAPIView.as_view(), name='user-update'),
     path('isprange', ISPRangeListAPIView.as_view(), name = 'isp-range-list'),
     path('clientrange', ClientRangeListAPIView.as_view(), name = 'client-range-list'),
-    path('id/<int:pk>', UserAPIView.as_view(), name = 'get-user-by-id')
+    path('id/<int:pk>', UserAPIView.as_view(), name = 'get-user-by-id'),
+    path('activate', ActivateAccount.as_view(), name='activate'),
+    path('resend-activation/', ResendActivationEmail.as_view(), name='resend_activation'),
 ]
