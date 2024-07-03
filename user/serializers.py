@@ -14,7 +14,7 @@ class UserRegUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'phone_number', 'usertype', 'street', 'country', 'city', 'zipcode', 'state', 'get_same_video', 'status', 'appears_in_others_video', 'voice_can_be_recorded', 'be_shown_potential', 'be_shown_public_business', 'be_shown_social_media', 'is_active')
+        fields = ('username', 'email', 'password', 'phone_number', 'usertype', 'status', 'tourplace', 'level', 'is_active')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -27,24 +27,16 @@ class UserRegUpdateSerializer(serializers.ModelSerializer):
         instance.email = validated_data.get('email', instance.email)
         instance.phone_number = validated_data.get('phone_number', instance.phone_number)
         instance.usertype = validated_data.get('usertype', instance.usertype)
-        instance.street = validated_data.get('street', instance.street)
-        instance.country = validated_data.get('country', instance.country)
-        instance.city = validated_data.get('city', instance.city)
-        instance.zipcode = validated_data.get('zipcode', instance.zipcode)
-        instance.state = validated_data.get('state', instance.state)
-        instance.get_same_video = validated_data.get('get_same_video', instance.get_same_video)
-        instance.appears_in_others_video = validated_data.get('appears_in_others_video', instance.appears_in_others_video)
-        instance.voice_can_be_recorded = validated_data.get('voice_can_be_recorded', instance.voice_can_be_recorded)
-        instance.be_shown_potential = validated_data.get('be_shown_potential', instance.be_shown_potential)
-        instance.be_shown_public_business = validated_data.get('be_shown_public_business', instance.be_shown_public_business)
-        instance.be_shown_social_media = validated_data.get('be_shown_social_media', instance.be_shown_social_media)
+        instance.tourplace = validated_data.get('tourplace', instance.tourplace)
+        instance.level = validated_data.get('level', instance.level)
+        instance.is_active = validated_data.get('is_active', instance.is_active)
         instance.save()
         return super().update(instance, validated_data)
 
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'phone_number', 'usertype', 'street', 'country', 'city', 'zipcode', 'state', 'get_same_video', 'appears_in_others_video', 'voice_can_be_recorded', 'be_shown_potential', 'be_shown_public_business', 'be_shown_social_media']  # Exclude 'password'
+        fields = ['username', 'email', 'phone_number', 'usertype', 'status', 'tourplace', 'level', 'is_active']  # Exclude 'password'
         read_only_fields = fields
 
 class UserLoginSerializer(serializers.Serializer):
