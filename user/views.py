@@ -150,6 +150,13 @@ class ActivateAccount(APIView):
         if user is not None and account_activation_token.check_token(user, token):
             user.is_active = True
             user.save()
+            mail_subject = 'Activate Successfully'
+            message = render_to_string('verification_success_email.html', {
+                'user': user,
+            })
+            email = EmailMessage(mail_subject, message, to=[user.email])
+            email.content_subtype = "html"
+            email.send()
             return Response({"status": True, "data": "Your account has been successfully activated."}, status=status.HTTP_200_OK)
         else:
             return Response({"status": False, "data": "Activation link is invalid!"}, status=status.HTTP_400_BAD_REQUEST)
