@@ -27,7 +27,7 @@ class UserAPIView(APIView):
             current_site = request.get_host()
             token = account_activation_token.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            activation_url = f"http://emmysvideos.com/email_verify?uid={uid}&token={token}"
+            activation_url = f"https://emmysvideos.com/email_verify?uid={uid}&token={token}"
             mail_subject = 'Activate your account'
             message = render_to_string('acc_active_email.html', {
                 'user': user,
@@ -167,12 +167,13 @@ class ResendActivationEmail(APIView):
                 mail_subject = 'Activate your account.'
                 token = account_activation_token.make_token(user)
                 uid = urlsafe_base64_encode(force_bytes(user.pk))
-                activation_url = f"http://emmysvideos.com/email_verify?uid={uid}&token={token}"
+                activation_url = f"https://emmysvideos.com/email_verify?uid={uid}&token={token}"
                 message = render_to_string('acc_active_email.html', {
                     'user': user,
                     'activation_url': activation_url,
                 })
                 email = EmailMessage(mail_subject, message, to=[user.email])
+                email.content_subtype = "html"
                 email.send()
                 return Response({"status": True, "data": "A new activation email has been sent."}, status=status.HTTP_200_OK)
             else:
