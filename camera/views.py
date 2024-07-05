@@ -3,15 +3,31 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Camera
 from .serializers import CameraSerializer
-from user.permissions import IsISP
+from user.permissions import IsAdminOrISP, IsISP, IsClient
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticated
 from .utils import convert_rtsp_to_hls, get_output_dir, stop_stream
 import requests
 import json
+from user.models import User
 # Create your views here.
 
+class CameraClientAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get(self, request):
+        tourplace = request.data.get("tourplace")
+        isp = User.objects.get(tourplace = tourplace)
+        if isp is not None:
+            cameras = Camera.objects.filter(isp=isp.pk)
+            serializer = CameraSerializer(cameras, many=True)
+            return Response({'status': True, 'data': serializer.data})
+        else:
+            return Response({'status': False, 'error': 'You have to login in this site.'}, status=400)
+
 class CameraAPIView(APIView):
-    permission_classes = [IsISP]
+    permission_classes = [IsAdminOrISP]
     parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request):
@@ -29,6 +45,9 @@ class CameraAPIView(APIView):
         
     def post(self, request):
         data = request.data
+        isp = request.user
+        if isp.usertype == 1:
+            return Response({'status': False, 'error': 'You can not register your camera'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
         rtsp_url = "rtsp://" + data.get("camera_user_name") + ":" + data.get("password") + "@" + data.get("camera_ip") + ":" + data.get("camera_port") + "/"
         output_dir = get_output_dir(rtsp_url)
         data = {
