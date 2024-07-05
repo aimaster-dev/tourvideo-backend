@@ -5,7 +5,7 @@ class CameraSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Camera
-        fields = ['id', 'camera_name', 'camera_ip', 'camera_port', 'camera_user_name', 'password', 'created_at', 'updated_at']
+        fields = ['id', 'camera_name', 'camera_ip', 'camera_port', 'camera_user_name', 'password', 'output_url', 'created_at', 'updated_at']
     
     def validate(self, attrs):
         if self.instance:

@@ -9,6 +9,7 @@ class Camera(models.Model):
     camera_port = models.CharField(max_length=255)
     camera_user_name = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
+    output_url = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
