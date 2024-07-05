@@ -21,5 +21,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('api/v1/user/', include('user.urls')),
     path('api/v1/video/', include('videomgmt.urls')),
-    path('api/v1/camera/', include('camera.urls'))
+    path('api/v1/camera/', include('camera.urls')),
+    path('api/v1/payment/', include('payment.urls')),
+    path('api/v1/stream/', include('stream.urls'))
 ]

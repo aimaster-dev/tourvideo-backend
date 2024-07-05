@@ -24,7 +24,6 @@ class UserAPIView(APIView):
             user = serializer.save()
             serializer.is_active = False
             user.save()
-            current_site = request.get_host()
             token = account_activation_token.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             activation_url = f"https://emmysvideos.com/email_verify?uid={uid}&token={token}"
@@ -170,7 +169,6 @@ class ResendActivationEmail(APIView):
         try:
             user = User.objects.get(email=email)
             if not user.is_active:
-                current_site = request.get_host()
                 mail_subject = 'Activate your account.'
                 token = account_activation_token.make_token(user)
                 uid = urlsafe_base64_encode(force_bytes(user.pk))

@@ -8,7 +8,7 @@ class IsISP(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.usertype == 2
 
-class IsClerk(permissions.BasePermission):
+class IsClient(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.usertype == 3
     
