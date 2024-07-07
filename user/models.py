@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
-from tourplace.models import TourPlace
 
 # Create your models here.
 class MyUserManager(BaseUserManager):
@@ -29,7 +28,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     usertype = models.IntegerField(default=3)
     phone_number = models.CharField(max_length=15)
     email = models.EmailField(unique=True)
-    tourplace = models.ForeignKey(TourPlace, on_delete=models.CASCADE)
+    tourplace = models.IntegerField(default=0)
     status = models.BooleanField(default=False)
     level = models.IntegerField(default=0)
     is_active = models.BooleanField(default=False)

@@ -11,6 +11,7 @@ from .permissions import IsAdmin
 from .tokens import account_activation_token
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
+from tourplace.models import TourPlace
 # Create your views here.
 
 class UserAPIView(APIView):
@@ -43,6 +44,8 @@ class UserAPIView(APIView):
         try:
             user = User.objects.get(id = pk)
             serializer = UserDetailSerializer(user)
+            data = serializer.data
+            data['tourplace'] = TourPlace.objects.get(id = data['tourplace'])
             return Response({"status": True, "data": serializer.data})
         except user.DoesNotExist:
             Response({"status": False, "data": {"msg": "User not found."}}, status=status.HTTP_404_NOT_FOUND)
