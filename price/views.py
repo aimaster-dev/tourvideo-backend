@@ -11,7 +11,7 @@ from rest_framework import status
 
 class PriceAPIView(APIView):
     
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdmin]
     
     def post(self, request):
         user = request.user
@@ -23,6 +23,11 @@ class PriceAPIView(APIView):
                 return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)
             return Response({'status': False, 'data': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         return Response({'status': False, 'data': {'msg': 'You do not any permission to create the Price.'}})
+    
+    def get(self, request, pk, format=None):
+        price = get_object_or_404(Price, pk=pk)
+        serializer = PriceSerializer(price)
+        return Response(serializer.data)
     
 class PriceUpdateAPIView(APIView):
     

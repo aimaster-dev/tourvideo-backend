@@ -52,6 +52,11 @@ class TourplaceUpdateAPIView(APIView):
             serializer.save()
             return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)
         return Response({'status': False, 'data': {'msg': 'You do not any permission to create the tourplace.'}})
+    
+    def get(self, request, pk, format=None):
+        tourplace = get_object_or_404(TourPlace, pk=pk)
+        serializer = TourplaceSerializer(tourplace)
+        return Response(serializer.data)
 
 class TourplaceDeleteAPIView(APIView):
     
