@@ -4,6 +4,7 @@ from django.utils import timezone
 # Create your models here.
 class Price(models.Model):
     level = models.IntegerField()
+    price = models.IntegerField(default=0)
     title = models.CharField(max_length=255)
     record_time = models.IntegerField(default=0)
     record_limit = models.IntegerField(default=0)
