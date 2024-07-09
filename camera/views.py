@@ -27,7 +27,7 @@ class CameraClientAPIView(APIView):
             return Response({'status': False, 'error': 'You have to login in this site.'}, status=400)
 
 class CameraAPIView(APIView):
-    permission_classes = [IsAdminOrISP]
+    permission_classes = [IsAuthenticated]
     parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request):
@@ -36,12 +36,14 @@ class CameraAPIView(APIView):
             cameras = Camera.objects.all()
             serializer = CameraSerializer(cameras, many=True)
             return Response({'status': True, 'data': serializer.data})
-        elif isp is not None:
+        elif (isp.usertype == 3 or isp.usertype == 2) and isp is not None:
+            if isp.usertype == 3:
+                isp = User.objects.get(tourplace = isp.tourplace, usertype = 2)
             cameras = Camera.objects.filter(isp=isp.pk)
             serializer = CameraSerializer(cameras, many=True)
             return Response({'status': True, 'data': serializer.data})
         else:
-            return Response({'status': False, 'error': 'You have to login in this site.'}, status=400)
+            return Response({'status': False, 'error': 'You have to login this site.'}, status=400)
         
     def post(self, request):
         data = request.data
