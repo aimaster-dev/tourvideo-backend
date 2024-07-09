@@ -26,3 +26,6 @@ urlpatterns = [
     path('api/v1/price/', include('price.urls')),
     path('api/v1/tourplace/', include('tourplace.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
