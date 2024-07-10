@@ -77,8 +77,6 @@ def process_video(video_id, user_id, original_filename):
         video.save()
         video_url = "http://localhost:8000/media/" + final_video_relative_path
         send_notification_email(user, video_url)
-        # Example of starting a subprocess within a subprocess
-        # subprocess.run(['python', 'some_other_script.py', str(video.id)])
         
     finally:
         header_clip.reader.close()

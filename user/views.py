@@ -7,7 +7,7 @@ from .serializers import UserRegUpdateSerializer, UserListSerializer, UserLoginS
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from .models import User
-from .permissions import IsAdmin
+from .permissions import IsAdmin, IsAdminOrISP
 from .tokens import account_activation_token
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
@@ -120,14 +120,18 @@ class ISPRangeListAPIView(ListAPIView):
     
 class ClientRangeListAPIView(ListAPIView):
     serializer_class = UserListSerializer
-    permission_classes = [IsAdmin]  # Assuming you want this endpoint to be protected
+    permission_classes = [IsAdminOrISP]  # Assuming you want this endpoint to be protected
 
     def get_queryset(self):
         """
         Optionally restricts the returned users to a given range,
         by filtering against a `start_row_index` and `end_row_index` query parameter in the URL.
         """
-        queryset = User.objects.filter(usertype = 3)
+        queryset = []
+        if self.request.user.usertype == 1:
+            queryset = User.objects.filter(usertype = 3)
+        elif self.request.user.usertype == 2:
+            queryset = User.objects.filter(usertype = 3, tourplace = self.request.user.tourplace)
         start_row_index = self.request.query_params.get('start_row_index', None)
         end_row_index = self.request.query_params.get('end_row_index', None)
 
