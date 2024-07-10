@@ -70,22 +70,5 @@ class Video(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     thumbnail = models.ImageField(upload_to='videos/thumbnail/', null=True, blank= True)
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        if not self.thumbnail:
-            self.generate_thumbnail()
-    
-    def generate_thumbnail(self):
-        clip = VideoFileClip(self.video_path.path)
-        temp_thumb = io.BytesIO()
-        frame = clip.get_frame(t = 1)
-        image = Image.fromarray(frame)
-        image.save(temp_thumb, format='JPEG')
-        temp_thumb.seek(0)
-        self.thumbnail.save(f"{self.pk}_thumbnail.jpg", ContentFile(temp_thumb.read()), save=False)
-        temp_thumb.close()
-        clip.close()
-        self.save()
-
     class Meta:
         db_table = 'video_tbl'
