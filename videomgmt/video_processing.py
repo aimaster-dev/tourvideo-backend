@@ -30,6 +30,7 @@ def convert_webm_to_mp4(webm_path, mp4_path):
     command = [
         'ffmpeg', '-i', webm_path, '-c:v', 'libx264', '-crf', '23', '-preset', 'medium', '-c:a', 'aac', '-b:a', '128k', '-movflags', 'faststart', mp4_path
     ]
+    print("starting to convert webm to mp4")
     result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if result.returncode != 0:
         raise ValueError(f"Error converting webm to mp4: {result.stderr.decode('utf-8')}")
@@ -48,8 +49,8 @@ def process_video(video_id, user_id, original_filename):
     video = Video.objects.get(pk=video_id)
     user = User.objects.get(pk=user_id)
 
-    header = Header.objects.filter(user=user).order_by('?').first()
-    footer = Footer.objects.filter(user=user).order_by('?').first()
+    header = Header.objects.all().order_by('?').first()
+    footer = Footer.objects.all().order_by('?').first()
 
     if not header or not footer:
         video.status = False
