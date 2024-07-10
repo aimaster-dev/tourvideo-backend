@@ -150,4 +150,17 @@ class VideoAddAPIView(APIView):
         
         return Response({"status": False, "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
-    # def get(self, request):
+    def get(self, request):
+        user = request.user
+        if user.usertype == 1:
+            videos = Video.objects.all()
+            serializer = VideoSerializer(videos, many = True)
+            return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        elif user.usertype == 2:
+            videos = Video.objects.filter(tourplace = user.tourplace)
+            serializer = VideoSerializer(videos, many = True)
+            return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        elif user.usertype == 3:
+            videos = Video.objects.filter(client = user.pk)
+            serializer = VideoSerializer(videos, many = True)
+            return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
