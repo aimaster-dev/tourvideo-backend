@@ -27,7 +27,7 @@ class PriceAPIView(APIView):
     def get(self, request, pk, format=None):
         price = get_object_or_404(Price, pk=pk)
         serializer = PriceSerializer(price)
-        return Response(serializer.data)
+        return Response({'status': False, 'data': serializer.data}, status=status.HTTP_200_OK)
     
 class PriceUpdateAPIView(APIView):
     

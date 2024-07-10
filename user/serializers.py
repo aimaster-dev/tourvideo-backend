@@ -14,7 +14,7 @@ class UserRegUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'phone_number', 'usertype', 'status', 'tourplace', 'level', 'is_active')
+        fields = ('id', 'username', 'email', 'password', 'phone_number', 'usertype', 'status', 'tourplace', 'level', 'is_active')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -36,7 +36,7 @@ class UserRegUpdateSerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'phone_number', 'usertype', 'status', 'tourplace', 'level', 'is_active']  # Exclude 'password'
+        fields = ['id', 'username', 'email', 'phone_number', 'usertype', 'status', 'tourplace', 'level', 'is_active']  # Exclude 'password'
         read_only_fields = fields
 
 class UserLoginSerializer(serializers.Serializer):
@@ -56,6 +56,7 @@ class UserLoginSerializer(serializers.Serializer):
                 'access': str(access),
                 'user_id': user.id,
                 'usertype': user.usertype,
+                'level': user.level,
                 'username': user.username,
                 'status' : user.status,
             }
