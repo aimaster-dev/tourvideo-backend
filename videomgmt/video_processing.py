@@ -5,6 +5,8 @@ import hashlib
 from datetime import datetime
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from django.core.wsgi import get_wsgi_application
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Set up Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "your_project_name.settings")
@@ -31,6 +33,16 @@ def convert_webm_to_mp4(webm_path, mp4_path):
     result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if result.returncode != 0:
         raise ValueError(f"Error converting webm to mp4: {result.stderr.decode('utf-8')}")
+
+def send_notification_email(user, video_url):
+    subject = 'Your Video Has Been Processed'
+    message = render_to_string('video_success_email.html', {
+        'user': user,
+        'video_url': video_url,
+    })
+    email = EmailMessage(subject, message, to=[user.email])
+    email.content_subtype = "html"
+    email.send()
 
 def process_video(video_id, user_id, original_filename):
     video = Video.objects.get(pk=video_id)
@@ -63,7 +75,8 @@ def process_video(video_id, user_id, original_filename):
         video.video_path = final_video_relative_path
         video.status = True
         video.save()
-        
+        video_url = "http://localhost:8000/media/" + final_video_relative_path
+        send_notification_email(user, video_url)
         # Example of starting a subprocess within a subprocess
         # subprocess.run(['python', 'some_other_script.py', str(video.id)])
         
