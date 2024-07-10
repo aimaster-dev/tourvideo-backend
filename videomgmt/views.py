@@ -149,3 +149,5 @@ class VideoAddAPIView(APIView):
             return Response({"status": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
         
         return Response({"status": False, "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # def get(self, request):
