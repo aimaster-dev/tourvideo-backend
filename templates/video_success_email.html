@@ -151,7 +151,8 @@
               <p style="margin: 0;">Hi, {{ user.username }},</p>
               <p>We are excited to inform you that your tour video has been successfully processed!</p>
               <p>You can view your personalized tour video by clicking the link below:</p>
-              <p><a href="{{ video_url }}">View Your Tour Video</a></p>
+              <p><a href="http://localhost:8000/api/v1/video/download?video_url={{ video_url }}">Download Your Tour Video</a></p>
+              <!-- <p><a href="{{ video_url }}" download = "{{ video_name }}">Download Your Tour Video</a></p> -->
               <p>Thank you for using our service. We hope you enjoy your video!</p>
               <p>Best regards,</p>
             </td>

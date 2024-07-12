@@ -35,11 +35,12 @@ def convert_webm_to_mp4(webm_path, mp4_path):
     if result.returncode != 0:
         raise ValueError(f"Error converting webm to mp4: {result.stderr.decode('utf-8')}")
 
-def send_notification_email(user, video_url):
+def send_notification_email(user, video_url, final_video_name):
     subject = 'Your Video Has Been Processed'
     message = render_to_string('video_success_email.html', {
         'user': user,
         'video_url': video_url,
+        'video_name': final_video_name
     })
     email = EmailMessage(subject, message, to=[user.email])
     email.content_subtype = "html"
@@ -72,12 +73,12 @@ def process_video(video_id, user_id, original_filename):
         final_video_absolute_path = os.path.join(settings.MEDIA_ROOT, final_video_relative_path)
         os.makedirs(os.path.dirname(final_video_absolute_path), exist_ok=True)
         final_clip.write_videofile(final_video_absolute_path, codec='libx264')
-
+        final_video_relative_path = final_video_relative_path.replace('\\', '/')
         video.video_path = final_video_relative_path
         video.status = True
         video.save()
         video_url = "http://localhost:8000/media/" + final_video_relative_path
-        send_notification_email(user, video_url)
+        send_notification_email(user, video_url, final_video_name)
         
     finally:
         header_clip.reader.close()

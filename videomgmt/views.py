@@ -12,6 +12,8 @@ from django.conf import settings
 import os
 from tourplace.models import TourPlace
 from .video_processing import process_video
+from django.shortcuts import render
+from django.http import Http404, FileResponse
 
 class HeaderAPIView(APIView):
     permission_classes = [IsAdmin]
@@ -164,3 +166,15 @@ class VideoAddAPIView(APIView):
             videos = Video.objects.filter(client = user.pk)
             serializer = VideoSerializer(videos, many = True)
             return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        
+def download_video(request):
+    video_url = request.GET.get('video_url')
+    if not video_url:
+        raise Http404("Video URL not provided")
+
+    video_path = os.path.join(settings.MEDIA_ROOT, video_url.replace('http://localhost:8000/media/', '').replace('/', os.sep))
+    if not os.path.exists(video_path):
+        raise Http404("Video not found")
+
+    response = FileResponse(open(video_path, 'rb'), as_attachment=True, filename=os.path.basename(video_path))
+    return response
