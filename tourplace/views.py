@@ -56,7 +56,7 @@ class TourplaceUpdateAPIView(APIView):
     def get(self, request, pk, format=None):
         tourplace = get_object_or_404(TourPlace, pk=pk)
         serializer = TourplaceSerializer(tourplace)
-        return Response(serializer.data)
+        return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)
 
 class TourplaceDeleteAPIView(APIView):
     
@@ -81,5 +81,13 @@ class TourplaceGetAllAPIView(APIView):
 
     def get(self, request):
         tourplaces = TourPlace.objects.all()
+        serializer = TourplaceSerializer(tourplaces, many = True)
+        return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)
+    
+class TourplaceGetAllForISPAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        tourplaces = TourPlace.objects.exclude(isp = 0)
         serializer = TourplaceSerializer(tourplaces, many = True)
         return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)

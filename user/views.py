@@ -6,12 +6,14 @@ from rest_framework.generics import ListAPIView
 from .serializers import UserRegUpdateSerializer, UserListSerializer, UserLoginSerializer, UserDetailSerializer
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from .models import User
+from .models import User, Invitation
 from .permissions import IsAdmin, IsAdminOrISP
 from .tokens import account_activation_token
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from tourplace.models import TourPlace
+from django.utils.crypto import get_random_string
+from django.shortcuts import get_object_or_404
 # Create your views here.
 
 class UserAPIView(APIView):
@@ -192,3 +194,48 @@ class ResendActivationEmail(APIView):
                 return Response({"status": False, "data": "This account is already active."}, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
             return Response({"status": False, "data": "No user found with this email address."}, status=status.HTTP_404_NOT_FOUND)
+
+class InviteUserView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        tourplace = request.data.get('tourplace')
+        token = get_random_string(50)
+        if request.user.usertype != 1:
+            return Response({"status": True, "data": {"msg": "You don't have any permission to create ISP account."}})
+        invited_by = request.user
+        Invitation.objects.create(email = email, tourplace = tourplace, token = token, invited_by = invited_by)
+        invitation_link = f"{request.scheme}://{request.get_host()}/set_password/{token}"
+        subject = 'Invitation to Join'
+        message = render_to_string('isp_register.html', {
+            'invitation_link': invitation_link
+        })
+        email = EmailMessage(subject, message, to=[email])
+        email.content_subtype = "html"
+        email.send()
+        return Response({"status": True, "data": {"msg": "Invitation Sent."}}, status=status.HTTP_200_OK)
+    
+class SetPasswordView(APIView):
+    def post(self, request, token):
+        invitation = get_object_or_404(Invitation, token = token)
+        userdata = request.data
+        userdata["tourplace"] = invitation.tourplace
+        userdata["email"] = invitation.email
+        userdata["phone_number"] = "000-000-0000"
+        userdata["usertype"] = 2
+        serializer = UserRegUpdateSerializer(data = userdata)
+        if serializer.is_valid():
+            user = serializer.save()
+            tourplace_model = TourPlace.objects.get(pk = invitation.tourplace)
+            tourplace_model.isp = user.pk
+            tourplace_model.save()
+            user.is_invited = True
+            user.save()
+            invitation.delete()
+            subject = 'Invitation to Join'
+            message = render_to_string('isp_register_successfully.html')
+            email = EmailMessage(subject, message, to=[userdata["email"]])
+            email.content_subtype = "html"
+            email.send()
+            user_serializer = UserDetailSerializer(user)
+            return Response({"status": True, "data": user_serializer.data}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

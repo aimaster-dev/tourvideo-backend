@@ -31,6 +31,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     tourplace = models.IntegerField(default=0)
     status = models.BooleanField(default=False)
     level = models.IntegerField(default=0)
+    is_invited = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
@@ -46,3 +47,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+class Invitation(models.Model):
+    email = models.EmailField()
+    token = models.CharField(max_length=100, unique=True)
+    tourplace = models.IntegerField(default=0)
+    invited_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
