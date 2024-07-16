@@ -88,6 +88,6 @@ class TourplaceGetAllForISPAPIView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self, request):
-        tourplaces = TourPlace.objects.exclude(isp = 0)
+        tourplaces = TourPlace.objects.filter(isp = 0)
         serializer = TourplaceSerializer(tourplaces, many = True)
         return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)
