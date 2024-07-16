@@ -228,6 +228,8 @@ class SetPasswordView(APIView):
             tourplace_model.isp = user.pk
             tourplace_model.save()
             user.is_invited = True
+            user.status = True
+            user.is_active = True
             user.save()
             invitation.delete()
             subject = 'Invitation to Join'
