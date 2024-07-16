@@ -220,7 +220,6 @@ class SetPasswordView(APIView):
         userdata = request.data
         userdata["tourplace"] = invitation.tourplace
         userdata["email"] = invitation.email
-        userdata["phone_number"] = "000-000-0000"
         userdata["usertype"] = 2
         serializer = UserRegUpdateSerializer(data = userdata)
         if serializer.is_valid():
