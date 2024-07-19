@@ -123,7 +123,6 @@ class ISPRangeListAPIView(ListAPIView):
 class ClientRangeListAPIView(ListAPIView):
     serializer_class = UserListSerializer
     permission_classes = [IsAdminOrISP]  # Assuming you want this endpoint to be protected
-
     def get_queryset(self):
         """
         Optionally restricts the returned users to a given range,
