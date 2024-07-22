@@ -273,4 +273,4 @@ class SetPasswordView(APIView):
                 }
                 data['tourplace'].append(tourdata)
             return Response({"status": True, "data": data}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": False, "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
