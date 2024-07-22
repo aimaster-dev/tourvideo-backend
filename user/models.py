@@ -28,7 +28,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     usertype = models.IntegerField(default=3)
     phone_number = models.CharField(max_length=15)
     email = models.EmailField(unique=True)
-    tourplace = models.IntegerField(default=0)
+    tourplace = models.JSONField(blank=True, default=list)
     status = models.BooleanField(default=False)
     level = models.IntegerField(default=0)
     is_invited = models.BooleanField(default=False)
@@ -51,6 +51,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Invitation(models.Model):
     email = models.EmailField()
     token = models.CharField(max_length=100, unique=True)
-    tourplace = models.IntegerField(default=0)
+    tourplace = models.JSONField(blank=True, default=list)
     invited_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

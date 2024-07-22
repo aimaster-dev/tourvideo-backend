@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Camera
-from .serializers import CameraSerializer
+from .serializers import CameraSerializer, CameraUpdateSerializer
 from user.permissions import IsAdminOrISP, IsISP, IsClient
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
@@ -10,6 +10,7 @@ from .utils import convert_rtsp_to_hls, get_output_dir, stop_stream
 import requests
 import json
 from user.models import User
+from tourplace.models import TourPlace
 # Create your views here.
 
 class CameraClientAPIView(APIView):
@@ -18,32 +19,37 @@ class CameraClientAPIView(APIView):
 
     def get(self, request):
         tourplace = request.data.get("tourplace")
-        isp = User.objects.get(tourplace = tourplace)
-        if isp is not None:
-            cameras = Camera.objects.filter(isp=isp.pk)
-            serializer = CameraSerializer(cameras, many=True)
+        user = request.user
+        cameras = []
+        print(tourplace)
+        if tourplace is None and user.usertype == 2:
+            tourplaces = user.tourplace
+            cameras = Camera.objects.filter(tourplace = tourplaces[0])
+        else:
+            cameras = Camera.objects.filter(tourplace=tourplace)
+        if len(cameras) != 0:
+            serializer = CameraUpdateSerializer(cameras, many=True)
             return Response({'status': True, 'data': serializer.data})
         else:
-            return Response({'status': False, 'error': 'You have to login in this site.'}, status=400)
+            return Response({'status': False, 'error': 'There is no cameras now.'}, status=400)
 
 class CameraAPIView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request):
-        isp = request.user
-        if isp.usertype == 1:
+        user = request.user
+        if user.usertype == 1:
             cameras = Camera.objects.all()
-            serializer = CameraSerializer(cameras, many=True)
+            serializer = CameraUpdateSerializer(cameras, many=True)
             return Response({'status': True, 'data': serializer.data})
-        elif (isp.usertype == 3 or isp.usertype == 2) and isp is not None:
-            if isp.usertype == 3:
-                isp = User.objects.get(tourplace = isp.tourplace, usertype = 2)
-            cameras = Camera.objects.filter(isp=isp.pk)
-            serializer = CameraSerializer(cameras, many=True)
+        elif user is not None:
+            tourplaces = user.tourplace
+            cameras = Camera.objects.filter(tourplace__in=tourplaces)
+            serializer = CameraUpdateSerializer(cameras, many=True)
             return Response({'status': True, 'data': serializer.data})
         else:
-            return Response({'status': False, 'error': 'You have to login this site.'}, status=400)
+            return Response({'status': False, 'error': 'You have to login this site.'}, status=status.HTTP_400_BAD_REQUEST)
         
     def post(self, request):
         data = request.data
@@ -52,7 +58,7 @@ class CameraAPIView(APIView):
             return Response({'status': False, 'error': 'You can not register your camera'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
         rtsp_url = "rtsp://" + data.get("camera_user_name") + ":" + data.get("password") + "@" + data.get("camera_ip") + ":" + data.get("camera_port") + "/"
         output_dir = get_output_dir(rtsp_url)
-        data = {
+        camdata = {
             "camera_name": data.get("camera_name"),
             "camera_ip": data.get("camera_ip"),
             "camera_port": data.get("camera_port"),
@@ -60,14 +66,18 @@ class CameraAPIView(APIView):
             "password": data.get("password"),
             "output_url": output_dir
         }
-        serializer = CameraSerializer(data = data)
+        tourplace = TourPlace.objects.get(id = data.get('tourplace'))
+        serializer = CameraSerializer(data = camdata)
         if serializer.is_valid():
-            serializer.save(isp = request.user)
+            serializer.save(isp = request.user, tourplace = tourplace)
             convert_rtsp_to_hls(rtsp_url, output_dir)
-            # hls_url = f'/{output_dir}/index.m3u8'
-    # return JsonResponse({'hls_url': hls_url})
-            return Response({"status": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
-        return Response({"status": False, "data": {"msg": serializer.errors["non_field_errors"][0]}}, status=status.HTTP_400_BAD_REQUEST)
+            output = serializer.data
+            output['tourplace'] = {
+                'id': tourplace.pk,
+                'place_name': tourplace.pk
+            }
+            return Response({"status": True, "data": output}, status=status.HTTP_201_CREATED)
+        return Response({"status": False, "data": {"msg": serializer.errors}}, status=status.HTTP_400_BAD_REQUEST)
     
 class CameraUpdateAPIView(APIView):
     permission_classes = [IsISP]
@@ -78,7 +88,8 @@ class CameraUpdateAPIView(APIView):
         camera_id = pk
         if isp is not None:
             camera = Camera.objects.get(isp=isp, id = camera_id)
-            serializer = CameraSerializer(camera)
+            serializer = CameraUpdateSerializer(camera)
+            data = serializer.data
             return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)
         else:
             return Response({'status': False, 'error': 'You have to login in this site.'}, status=400)
@@ -86,11 +97,11 @@ class CameraUpdateAPIView(APIView):
     def post(self, request):
         camera_id = request.data.get('id')
         try:
+            tourplace = TourPlace.objects.get(id = request.data.get('tourplace'))
             camera = Camera.objects.get(id=camera_id, isp=request.user)
             origin_dir = camera.output_url
             if not origin_dir:
                 return Response({'status': False, 'error': 'Origin Dir is not existed now.'}, status=400)
-            
             origin_dir = origin_dir.lstrip('/')
             stop_stream(origin_dir)
             data = request.data
@@ -102,12 +113,15 @@ class CameraUpdateAPIView(APIView):
                 "camera_port": data.get("camera_port"),
                 "camera_user_name": data.get("camera_user_name"),
                 "password": data.get("password"),
-                "output_url": output_dir
+                "output_url": output_dir,
+                "tourplace": tourplace.pk
             }
-            serializer = CameraSerializer(camera, data=data, partial=True)
+            serializer = CameraUpdateSerializer(camera, data=data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 convert_rtsp_to_hls(rtsp_url, output_dir)
+                output = serializer.data
+                output['tourplace']
                 return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
             return Response({"status": False, "data": {"msg": serializer.errors}})
         except Camera.DoesNotExist:

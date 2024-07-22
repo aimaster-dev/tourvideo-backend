@@ -20,8 +20,8 @@ class UserAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+
         serializer = UserRegUpdateSerializer(data = request.data)
-        print(serializer)
         print(serializer.is_valid())
         if serializer.is_valid():
             user = serializer.save()
@@ -42,13 +42,20 @@ class UserAPIView(APIView):
         return Response({"status": False, "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self, request, pk, format=None):
-        print(pk)
         try:
             user = User.objects.get(id = pk)
             serializer = UserDetailSerializer(user)
             data = serializer.data
-            data['tourplace'] = TourPlace.objects.get(id = data['tourplace'])
-            return Response({"status": True, "data": serializer.data})
+            tourpl = data['tourplace']
+            del data['tourplace']
+            data['tourplace'] = []
+            for tour in tourpl:
+                tour_data = {
+                    'id': tour,
+                    'place_name': TourPlace.objects.get(id = tour).place_name
+                }
+                data['tourplace'].append(tour_data)
+            return Response({"status": True, "data": data}, status=status.HTTP_200_OK)
         except user.DoesNotExist:
             Response({"status": False, "data": {"msg": "User not found."}}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -63,6 +70,9 @@ class UserDeleteAPIView(APIView):
             return Response({"status": False, "data": {"msg": "User ID is required."}}, status=status.HTTP_400_BAD_REQUEST)
         try:
             user = User.objects.get(id = user_id)
+            tourplace = user.tourplace
+            for tour in tourplace:
+                print(tour)
             user.delete()
             return Response({"status": True, "data": "The User Successfully deleted."}, status=status.HTTP_200_OK)
         except user.DoesNotExist:
@@ -98,7 +108,21 @@ class UserUpdateAPIView(APIView):
         serializer = UserRegUpdateSerializer(user, data=userdata, partial = True)
         if serializer.is_valid():
             serializer.save()
-            return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            data = serializer.data
+            tourplaces = data['tourplace']
+            del data['tourplace']
+            data['tourplace'] = []
+            for tourplace in tourplaces:
+                tour_data = {
+                    'id': tourplace,
+                    'place_name': TourPlace.objects.get(id = tourplace).place_name
+                }
+                data['tourplace'].append(tour_data)
+                if user.usertype == 2:
+                    place = TourPlace.objects.get(id = tourplace)
+                    place.isp = user.pk
+                    place.save()
+            return Response({"status": True, "data": data}, status=status.HTTP_200_OK)
         return Response({"status": False, "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
 class ISPRangeListAPIView(ListAPIView):
@@ -223,9 +247,11 @@ class SetPasswordView(APIView):
         serializer = UserRegUpdateSerializer(data = userdata)
         if serializer.is_valid():
             user = serializer.save()
-            tourplace_model = TourPlace.objects.get(pk = invitation.tourplace)
-            tourplace_model.isp = user.pk
-            tourplace_model.save()
+            tourplaces = invitation.tourplace
+            for tourplace in tourplaces:
+                tourplace_model = TourPlace.objects.get(pk = tourplace)
+                tourplace_model.isp = user.pk
+                tourplace_model.save()
             user.is_invited = True
             user.status = True
             user.is_active = True
@@ -237,5 +263,14 @@ class SetPasswordView(APIView):
             email.content_subtype = "html"
             email.send()
             user_serializer = UserDetailSerializer(user)
-            return Response({"status": True, "data": user_serializer.data}, status=status.HTTP_201_CREATED)
+            data = user_serializer.data
+            del data['tourplace']
+            data['tourplace'] = []
+            for tourplace in tourplaces:
+                tourdata = {
+                    'id': tourplace,
+                    'place_name': TourPlace.objects.get(id = tourplace).place_name
+                }
+                data['tourplace'].append(tourdata)
+            return Response({"status": True, "data": data}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
