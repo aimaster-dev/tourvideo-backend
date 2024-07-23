@@ -91,3 +91,16 @@ class TourplaceGetAllForISPAPIView(APIView):
         tourplaces = TourPlace.objects.filter(isp = 0)
         serializer = TourplaceSerializer(tourplaces, many = True)
         return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)
+
+class TourplaceGetAllForCamAPIView(APIView):
+    permission_classes = [IsAdminOrISP]
+
+    def get(self, request):
+        user = request.user
+        tourplaces = []
+        if user.usertype == 1:
+            tourplaces = TourPlace.objects.all()
+        elif user.usertype == 2:
+            tourplaces = TourPlace.objects.all()
+        serializer = TourplaceSerializer(tourplaces, many = True)
+        return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)
