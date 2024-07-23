@@ -101,6 +101,6 @@ class TourplaceGetAllForCamAPIView(APIView):
         if user.usertype == 1:
             tourplaces = TourPlace.objects.all()
         elif user.usertype == 2:
-            tourplaces = TourPlace.objects.all()
+            tourplaces = TourPlace.objects.filter(isp = user.pk)
         serializer = TourplaceSerializer(tourplaces, many = True)
         return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)
