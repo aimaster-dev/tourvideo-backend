@@ -113,12 +113,12 @@ class CameraUpdateAPIView(APIView):
                 "camera_port": data.get("camera_port"),
                 "camera_user_name": data.get("camera_user_name"),
                 "password": data.get("password"),
-                "output_url": output_dir,
-                "tourplace": tourplace.pk
+                "output_url": output_dir
             }
+            print(data)
             serializer = CameraUpdateSerializer(camera, data=data, partial=True)
             if serializer.is_valid():
-                serializer.save()
+                serializer.save(tourplace = tourplace)
                 convert_rtsp_to_hls(rtsp_url, output_dir)
                 output = serializer.data
                 output['tourplace']
