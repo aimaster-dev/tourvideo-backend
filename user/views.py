@@ -99,11 +99,15 @@ class UserUpdateAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         user_id = request.data['user_id']
-        print(user_id)
         user = User.objects.get(id = user_id)
         print(user)
         if user == None:
             Response({"status": False, "data": "User isn't existed now."}, status=status.HTTP_404_NOT_FOUND)
+        origin_tour = user.tourplace
+        for tour in origin_tour:
+            place = TourPlace.objects.get(id = tour)
+            place.isp = 0
+            place.save()
         userdata = request.data
         serializer = UserRegUpdateSerializer(user, data=userdata, partial = True)
         if serializer.is_valid():
