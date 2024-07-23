@@ -14,7 +14,11 @@ from django.core.mail import EmailMessage
 from tourplace.models import TourPlace
 from django.utils.crypto import get_random_string
 from django.shortcuts import get_object_or_404
+from django.db.models import F, Func
 # Create your views here.
+
+def is_subset(small, big):
+    return all(item in big for item in small)
 
 class UserAPIView(APIView):
     permission_classes = [AllowAny]
@@ -157,10 +161,14 @@ class ClientRangeListAPIView(ListAPIView):
         by filtering against a `start_row_index` and `end_row_index` query parameter in the URL.
         """
         queryset = []
+        a = self.request.user.tourplace if self.request.user.usertype == 2 else []
         if self.request.user.usertype == 1:
             queryset = User.objects.filter(usertype = 3)
         elif self.request.user.usertype == 2:
-            queryset = User.objects.filter(usertype = 3, tourplace = self.request.user.tourplace)
+            all_users = User.objects.filter(usertype=3)
+            for user in all_users:
+                if is_subset(user.tourplace, a):
+                    queryset.append(user)
         start_row_index = self.request.query_params.get('start_row_index', None)
         end_row_index = self.request.query_params.get('end_row_index', None)
 
