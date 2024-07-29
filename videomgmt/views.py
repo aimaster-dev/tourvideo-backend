@@ -45,11 +45,9 @@ class HeaderDeleteAPIView(APIView):
             return Response({"status": False, "data": {"msg": "Header ID is required."}}, status=status.HTTP_400_BAD_REQUEST)
         try:
             header = Header.objects.get(pk=header_id, user=request.user)
-            # Delete associated video file
             if header.video_path:
                 if default_storage.exists(header.video_path.name):
                     default_storage.delete(header.video_path.name)
-            # Delete associated thumbnail file
             if header.thumbnail:
                 if default_storage.exists(header.thumbnail.name):
                     default_storage.delete(header.thumbnail.name)
@@ -94,11 +92,9 @@ class FooterDeleteAPIView(APIView):
             return Response({"status": False, "data": {"msg": "Footer ID is required."}}, status=status.HTTP_400_BAD_REQUEST)
         try:
             footer = Footer.objects.get(pk=footer_id, user=request.user)
-            # Delete associated video file
             if footer.video_path:
                 if default_storage.exists(footer.video_path.name):
                     default_storage.delete(footer.video_path.name)
-            # Delete associated thumbnail file
             if footer.thumbnail:
                 if default_storage.exists(footer.thumbnail.name):
                     default_storage.delete(footer.thumbnail.name)
@@ -121,12 +117,10 @@ class VideoAddAPIView(APIView):
         tourplace_id = request.data.get('tourplace_id')
         if not tourplace_id:
             return Response({'error': 'Tourplace ID is required'}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
             tourplace = TourPlace.objects.get(pk=tourplace_id)
         except TourPlace.DoesNotExist:
             return Response({'error': 'Invalid Tourplace ID'}, status=status.HTTP_400_BAD_REQUEST)
-
         if 'video_path' not in request.FILES:
             return Response({'error': 'Video file is required'}, status=status.HTTP_400_BAD_REQUEST)
         data = request.data
@@ -143,13 +137,10 @@ class VideoAddAPIView(APIView):
                     temp_file.write(chunk)
             
             video = serializer.save(client=request.user, tourplace=tourplace, status=False)
-            
             subprocess.Popen(
                 ['D:\\Project\\MyProject\\OttisTourist\\1880_video_update_backend\\otisenv\\Scripts\\python.exe', 'D:\\Project\\MyProject\\OttisTourist\\1880_video_update_backend\\tourvideoproject\\videomgmt\\video_processing.py', str(video.id), str(request.user.id), original_filename]
             )
-            
             return Response({"status": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
-        
         return Response({"status": False, "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self, request):
@@ -159,7 +150,7 @@ class VideoAddAPIView(APIView):
             serializer = VideoSerializer(videos, many = True)
             return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
         elif user.usertype == 2:
-            videos = Video.objects.filter(tourplace = user.tourplace)
+            videos = Video.objects.filter(tourplace__in = user.tourplace)
             serializer = VideoSerializer(videos, many = True)
             return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
         elif user.usertype == 3:

@@ -24,7 +24,6 @@ class UserAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-
         serializer = UserRegUpdateSerializer(data = request.data)
         print(serializer.is_valid())
         if serializer.is_valid():
