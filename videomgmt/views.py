@@ -11,8 +11,6 @@ import subprocess
 from django.conf import settings
 import os
 from tourplace.models import TourPlace
-from .video_processing import process_video
-from django.shortcuts import render
 from django.http import Http404, FileResponse
 
 class HeaderAPIView(APIView):
@@ -21,15 +19,26 @@ class HeaderAPIView(APIView):
     
     def get_queryset(self):
         if self.request.user.usertype == 1:
-            return Header.objects.all()
+            tourplace = Header.objects.first().tourplace
+            return Header.objects.filter(tourplace = tourplace.pk)
         return Header.objects.filter(user=self.request.user)
     
     def get(self, request):
-        headers = self.get_queryset()
-        serializer = HeaderSerializer(headers, many=True)
-        return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        tourplace_id = request.data.get('tourplace')
+        if tourplace_id == None:
+            headers = self.get_queryset()
+            serializer = HeaderSerializer(headers, many=True)
+            return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        else:
+            tourplace = TourPlace.objects.get(id = tourplace_id)
+            headers = Header.objects.filter(tourplace = tourplace.pk)
+            serializer = HeaderSerializer(headers, many=True)
+            return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
     
     def post(self, request):
+        tourplace_id = request.data.get('tourplace')
+        data = request.data
+        data['tourplace'] = TourPlace.objects.get(id = tourplace_id).pk
         serializer = HeaderSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)
@@ -68,16 +77,28 @@ class FooterAPIView(APIView):
     
     def get_queryset(self):
         if self.request.user.usertype == 1:
-            return Footer.objects.all()
+            tourplace = Footer.objects.first().tourplace
+            return Footer.objects.filter(tourplace = tourplace.pk)
         return Footer.objects.filter(user=self.request.user)
     
     def get(self, request):
-        footers = self.get_queryset()
-        serializer = FooterSerializer(footers, many=True)
-        return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        tourplace_id = request.data.get('tourplace')
+        if tourplace_id == None:
+            footers = self.get_queryset()
+            serializer = FooterSerializer(footers, many=True)
+            return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        else:
+            # print(tourplace_id)
+            tourplace = TourPlace.objects.get(id = tourplace_id)
+            headers = Footer.objects.filter(tourplace = tourplace.pk)
+            serializer = FooterSerializer(headers, many=True)
+            return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
     
     def post(self, request):
-        serializer = FooterSerializer(data=request.data)
+        tourplace_id = request.data.get('tourplace')
+        data = request.data
+        data['tourplace'] = TourPlace.objects.get(id = tourplace_id).pk
+        serializer = FooterSerializer(data=data)
         if serializer.is_valid():
             serializer.save(user=request.user)
             return Response({"status": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
@@ -131,11 +152,9 @@ class VideoAddAPIView(APIView):
             uploaded_video = request.FILES['video_path']
             original_filename = uploaded_video.name
             temp_video_path = os.path.join(settings.MEDIA_ROOT, f'temp_uploaded_video_{request.user.username}.webm')
-            
             with open(temp_video_path, 'wb+') as temp_file:
                 for chunk in uploaded_video.chunks():
                     temp_file.write(chunk)
-            
             video = serializer.save(client=request.user, tourplace=tourplace, status=False)
             subprocess.Popen(
                 ['D:\\Project\\MyProject\\OttisTourist\\1880_video_update_backend\\otisenv\\Scripts\\python.exe', 'D:\\Project\\MyProject\\OttisTourist\\1880_video_update_backend\\tourvideoproject\\videomgmt\\video_processing.py', str(video.id), str(request.user.id), original_filename]

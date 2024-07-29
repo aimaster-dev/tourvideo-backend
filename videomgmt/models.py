@@ -13,6 +13,7 @@ class Header(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     thumbnail = models.ImageField(upload_to='headers/thumbnail/', null=True, blank= True)
+    tourplace = models.ForeignKey(TourPlace, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -40,6 +41,7 @@ class Footer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     thumbnail = models.ImageField(upload_to='footers/thumbnail/', null=True, blank= True)
+    tourplace = models.ForeignKey(TourPlace, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
