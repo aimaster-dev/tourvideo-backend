@@ -28,7 +28,7 @@ class HeaderAPIView(APIView):
         return Header.objects.filter(user=self.request.user)
     
     def get(self, request):
-        tourplace_id = request.data.get('tourplace')
+        tourplace_id = request.query_params.get('tourplace')
         if tourplace_id == None:
             headers = self.get_queryset()
             if headers.exists():
@@ -96,7 +96,7 @@ class FooterAPIView(APIView):
         return Footer.objects.filter(user=self.request.user)
     
     def get(self, request):
-        tourplace_id = request.data.get('tourplace')
+        tourplace_id = request.query_params.get('tourplace')
         if tourplace_id == None:
             footers = self.get_queryset()
             if footers.exists():
