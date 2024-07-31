@@ -72,10 +72,10 @@ class CameraAPIView(APIView):
             serializer.save(isp = request.user, tourplace = tourplace)
             convert_rtsp_to_hls(rtsp_url, output_dir)
             output = serializer.data
-            output['tourplace'] = {
+            output['tourplace'] = [{
                 'id': tourplace.pk,
                 'place_name': tourplace.pk
-            }
+            }]
             return Response({"status": True, "data": output}, status=status.HTTP_201_CREATED)
         return Response({"status": False, "data": {"msg": serializer.errors}}, status=status.HTTP_400_BAD_REQUEST)
     

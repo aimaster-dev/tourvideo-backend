@@ -60,9 +60,10 @@ def process_video(video_id, user_id, original_filename, tourplace):
         video_url = "http://localhost:8000/media/" + str(video.video_path)
         send_notification_email(user, video_url, '')
         return
-
-    temp_video_path = os.path.join(settings.MEDIA_ROOT, f'temp_uploaded_video_{user.username}.webm')
-    converted_video_path = os.path.join(settings.MEDIA_ROOT, f'converted_video_{user.username}.mp4')
+    
+    current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+    temp_video_path = os.path.join(settings.MEDIA_ROOT, str(video.video_path))
+    converted_video_path = os.path.join(settings.MEDIA_ROOT, f'converted_video_{user.username}_{current_time}.mp4')
 
     convert_webm_to_mp4(temp_video_path, converted_video_path)
 

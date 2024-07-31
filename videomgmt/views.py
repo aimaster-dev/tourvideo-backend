@@ -12,6 +12,7 @@ from django.conf import settings
 import os
 from tourplace.models import TourPlace
 from django.http import Http404, FileResponse
+from datetime import datetime
 
 class HeaderAPIView(APIView):
     permission_classes = [IsAdmin]
@@ -169,7 +170,8 @@ class VideoAddAPIView(APIView):
         if serializer.is_valid():
             uploaded_video = request.FILES['video_path']
             original_filename = uploaded_video.name
-            temp_video_path = os.path.join(settings.MEDIA_ROOT, f'temp_uploaded_video_{request.user.username}.webm')
+            current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+            temp_video_path = os.path.join(settings.MEDIA_ROOT, f'temp_uploaded_video_{request.user.username}_{current_time}.webm')
             with open(temp_video_path, 'wb+') as temp_file:
                 for chunk in uploaded_video.chunks():
                     temp_file.write(chunk)
