@@ -19,9 +19,8 @@ class HeaderAPIView(APIView):
     
     def get_queryset(self):
         if self.request.user.usertype == 1:
-            header = Header.objects.first()
-            if header and header.tourplace:
-                tourplace = header.tourplace
+            tourplace = TourPlace.objects.first()
+            if tourplace:
                 return Header.objects.filter(tourplace = tourplace.pk)
             else:
                 return Header.objects.none()
@@ -87,10 +86,9 @@ class FooterAPIView(APIView):
     
     def get_queryset(self):
         if self.request.user.usertype == 1:
-            footer = Footer.objects.first()
-            if footer and footer.tourplace:
-                tourplace = footer.tourplace
-                return Footer.objects.filter(tourplace = tourplace.pk)
+            tourplace = TourPlace.objects.first()
+            if tourplace:
+                return Header.objects.filter(tourplace = tourplace.pk)
             else:
                 return Footer.objects.none()
         return Footer.objects.filter(user=self.request.user)
@@ -177,7 +175,7 @@ class VideoAddAPIView(APIView):
                     temp_file.write(chunk)
             video = serializer.save(client=request.user, tourplace=tourplace, status=False)
             subprocess.Popen(
-                ['D:\\Project\\MyProject\\OttisTourist\\1880_video_update_backend\\otisenv\\Scripts\\python.exe', 'D:\\Project\\MyProject\\OttisTourist\\1880_video_update_backend\\tourvideoproject\\videomgmt\\video_processing.py', str(video.id), str(request.user.id), original_filename]
+                ['D:\\Project\\MyProject\\OttisTourist\\1880_video_update_backend\\otisenv\\Scripts\\python.exe', 'D:\\Project\\MyProject\\OttisTourist\\1880_video_update_backend\\tourvideoproject\\videomgmt\\video_processing.py', str(video.id), str(request.user.id), original_filename, str(tourplace_id)]
             )
             return Response({"status": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
         return Response({"status": False, "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

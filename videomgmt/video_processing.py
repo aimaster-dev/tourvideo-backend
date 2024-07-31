@@ -17,6 +17,7 @@ django.setup()
 from django.conf import settings
 from videomgmt.models import Video, Header, Footer
 from user.models import User
+from tourplace.models import TourPlace
 
 def generate_unique_filename(original_filename, username):
     current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -46,16 +47,18 @@ def send_notification_email(user, video_url, final_video_name):
     email.content_subtype = "html"
     email.send()
 
-def process_video(video_id, user_id, original_filename):
+def process_video(video_id, user_id, original_filename, tourplace):
     video = Video.objects.get(pk=video_id)
     user = User.objects.get(pk=user_id)
 
-    header = Header.objects.all().order_by('?').first()
-    footer = Footer.objects.all().order_by('?').first()
+    header = Header.objects.filter(tourplace = tourplace.pk).order_by('?').first()
+    footer = Footer.objects.filter(tourplace = tourplace.pk).order_by('?').first()
 
     if not header or not footer:
         video.status = False
         video.save()
+        video_url = "http://localhost:8000/media/" + str(video.video_path)
+        send_notification_email(user, video_url, '')
         return
 
     temp_video_path = os.path.join(settings.MEDIA_ROOT, f'temp_uploaded_video_{user.username}.webm')
@@ -90,12 +93,14 @@ def process_video(video_id, user_id, original_filename):
             os.remove(converted_video_path)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python video_processing.py <video_id> <user_id> <original_filename>")
+    if len(sys.argv) != 5:
+        print("Usage: python video_processing.py <video_id> <user_id> <original_filename> <tourplace>")
         sys.exit(1)
     
     video_id = int(sys.argv[1])
     user_id = int(sys.argv[2])
     original_filename = sys.argv[3]
+    tourplace_id = int(sys.argv[4])
+    tourplace = TourPlace.objects.get(pk = tourplace_id)
 
-    process_video(video_id, user_id, original_filename)
+    process_video(video_id, user_id, original_filename, tourplace)
