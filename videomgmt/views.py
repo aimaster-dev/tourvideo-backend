@@ -19,21 +19,31 @@ class HeaderAPIView(APIView):
     
     def get_queryset(self):
         if self.request.user.usertype == 1:
-            tourplace = Header.objects.first().tourplace
-            return Header.objects.filter(tourplace = tourplace.pk)
+            header = Header.objects.first()
+            if header and header.tourplace:
+                tourplace = header.tourplace
+                return Header.objects.filter(tourplace = tourplace.pk)
+            else:
+                return Header.objects.none()
         return Header.objects.filter(user=self.request.user)
     
     def get(self, request):
         tourplace_id = request.data.get('tourplace')
         if tourplace_id == None:
             headers = self.get_queryset()
-            serializer = HeaderSerializer(headers, many=True)
-            return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            if headers.exists():
+                serializer = HeaderSerializer(headers, many=True)
+                return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response({"status": True, "data": []}, status=status.HTTP_200_OK)
         else:
             tourplace = TourPlace.objects.get(id = tourplace_id)
             headers = Header.objects.filter(tourplace = tourplace.pk)
-            serializer = HeaderSerializer(headers, many=True)
-            return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            if headers.exists():
+                    serializer = HeaderSerializer(headers, many=True)
+                    return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response({"status": True, "data": []}, status=status.HTTP_200_OK)
     
     def post(self, request):
         tourplace_id = request.data.get('tourplace')
@@ -77,22 +87,32 @@ class FooterAPIView(APIView):
     
     def get_queryset(self):
         if self.request.user.usertype == 1:
-            tourplace = Footer.objects.first().tourplace
-            return Footer.objects.filter(tourplace = tourplace.pk)
+            footer = Footer.objects.first()
+            if footer and footer.tourplace:
+                tourplace = footer.tourplace
+                return Footer.objects.filter(tourplace = tourplace.pk)
+            else:
+                return Footer.objects.none()
         return Footer.objects.filter(user=self.request.user)
     
     def get(self, request):
         tourplace_id = request.data.get('tourplace')
         if tourplace_id == None:
             footers = self.get_queryset()
-            serializer = FooterSerializer(footers, many=True)
-            return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            if footers.exists():
+                serializer = FooterSerializer(footers, many=True)
+                return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response({"status": True, "data": []}, status=status.HTTP_200_OK)
         else:
             # print(tourplace_id)
             tourplace = TourPlace.objects.get(id = tourplace_id)
-            headers = Footer.objects.filter(tourplace = tourplace.pk)
-            serializer = FooterSerializer(headers, many=True)
-            return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            footers = Footer.objects.filter(tourplace = tourplace.pk)
+            if footers.exists():
+                serializer = FooterSerializer(footers, many=True)
+                return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response({"status": True, "data": []}, status=status.HTTP_200_OK)
     
     def post(self, request):
         tourplace_id = request.data.get('tourplace')
