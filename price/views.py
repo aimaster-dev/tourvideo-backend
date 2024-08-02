@@ -1,28 +1,32 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from user.permissions import IsAdmin, IsAdminOrISP
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from user.permissions import IsAdmin, IsISP
 from .models import Price
 from django.shortcuts import get_object_or_404
 from .serializers import PriceSerializer
 from rest_framework.response import Response
 from rest_framework import status
+from tourplace.models import TourPlace
 # Create your views here.
 
 class PriceAPIView(APIView):
     
-    permission_classes = [IsAdmin]
+    permission_classes = [IsAuthenticated]
     
     def post(self, request):
         user = request.user
-        if user.usertype == 1:
+        if user.usertype == 2:
+            tourplace_id = request.data.get('tourplace')
             data = request.data
+            data["tourplace"] = TourPlace.objects.get(id = tourplace_id).pk
             serializer = PriceSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
                 return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)
             return Response({'status': False, 'data': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({'status': False, 'data': {'msg': 'You do not any permission to create the Price.'}})
+        else:
+            return Response({'status': False, 'data': {"msg": "You don't have any permission to creat price."}}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
     def get(self, request, pk, format=None):
         price = get_object_or_404(Price, pk=pk)
@@ -31,21 +35,24 @@ class PriceAPIView(APIView):
     
 class PriceUpdateAPIView(APIView):
     
-    permission_classes = [IsAdmin]
+    permission_classes = [IsISP]
     
     def post(self, request):
         id = request.data["id"]
-        place = Price.objects.get(id = id)
+        price = Price.objects.get(id = id)
+        tourplace_id = request.data.get("tourplace")
         data = request.data
-        serializer = PriceSerializer(place, data=data, partial = True)
+        data["tourplace"] = TourPlace.objects.get(id = tourplace_id).pk
+        serializer = PriceSerializer(price, data=data, partial = True)
         if serializer.is_valid():
             serializer.save()
             return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)
-        return Response({'status': False, 'data': {'msg': 'You do not any permission to create the Price.'}})
+        else:
+            return Response({'status': False, 'data': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class PriceDeleteAPIView(APIView):
     
-    permission_classes = [IsAdmin]
+    permission_classes = [IsISP]
 
     def post(self, request):
         id = request.data.get('id')
@@ -62,9 +69,22 @@ class PriceDeleteAPIView(APIView):
             return Response({"status": False, "data": {"msg": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
 
 class PriceGetAllAPIView(APIView):
-    permission_classes = [AllowAny]
+    
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        Prices = Price.objects.all()
+        user = request.user
+        tourplace_id = request.data.get("tourplace")
+        Prices = []
+        if tourplace_id:
+            tourplace = TourPlace.objects.get(id = tourplace_id)
+            Prices = Price.objects.filter(tourplace = tourplace.pk)
+        else:
+            if user.usertype == 1:
+                tourplace = TourPlace.objects.all().first()
+                Prices = Price.objects.filter(tourplace = tourplace.pk)
+            elif user.usertype == 2 or user.usertype == 3:
+                tourplace = TourPlace.objects.filter(isp = user.pk).first()
+                Prices = Price.objects.filter(tourplace = tourplace.pk)
         serializer = PriceSerializer(Prices, many = True)
         return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)
