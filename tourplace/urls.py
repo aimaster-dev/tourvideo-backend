@@ -9,5 +9,5 @@ urlpatterns = [
     path('delete', TourplaceDeleteAPIView.as_view(), name = 'delete_tourplace'),
     path('id/<int:pk>', TourplaceUpdateAPIView.as_view(), name='get-tourplace-by-id'),
     path('getispall', TourplaceGetAllForISPAPIView.as_view(), name='get-tourplace-for-isp'),
-    path('getcamtour', TourplaceGetAllForCamAPIView.as_view(), name='get-tourplace-for-cam'),
+    path('gettourbyisp', TourplaceGetAllForCamAPIView.as_view(), name='get-tourplace-for-cam'),
 ]
