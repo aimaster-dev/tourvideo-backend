@@ -74,7 +74,7 @@ class PriceGetAllAPIView(APIView):
 
     def get(self, request):
         user = request.user
-        tourplace_id = request.data.get("tourplace")
+        tourplace_id = request.query_params.get("tourplace")
         Prices = []
         if tourplace_id:
             tourplace = TourPlace.objects.get(id = tourplace_id)
@@ -83,8 +83,12 @@ class PriceGetAllAPIView(APIView):
             if user.usertype == 1:
                 tourplace = TourPlace.objects.all().first()
                 Prices = Price.objects.filter(tourplace = tourplace.pk)
-            elif user.usertype == 2 or user.usertype == 3:
+            elif user.usertype == 2:
                 tourplace = TourPlace.objects.filter(isp = user.pk).first()
+                Prices = Price.objects.filter(tourplace = tourplace.pk)
+            elif user.usertype == 3:
+                tour_id = user.tourplace[0]
+                tourplace = TourPlace.objects.get(id = tour_id)
                 Prices = Price.objects.filter(tourplace = tourplace.pk)
         serializer = PriceSerializer(Prices, many = True)
         return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)
