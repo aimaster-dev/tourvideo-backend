@@ -67,7 +67,8 @@ class UserLoginSerializer(serializers.Serializer):
                 'level': user.level,
                 'username': user.username,
                 'status' : user.status,
-                'tourplace': user.tourplace
+                'tourplace': user.tourplace,
+                'user': user
             }
         else:
             raise serializers.ValidationError("Invalid email or password")

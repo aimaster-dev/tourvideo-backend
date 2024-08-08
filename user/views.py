@@ -87,13 +87,19 @@ class UserLoginAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = UserLoginSerializer(data = request.data)
+        tourplace = request.data.get("tourplace")
+        print(tourplace)
+        login_data = request.data
+        login_data.pop("tourplace", None)
+        serializer = UserLoginSerializer(data = login_data)
         if serializer.is_valid():
-            print(serializer.validated_data['status'])
-            print(serializer.validated_data['usertype'])
-            if serializer.validated_data['status'] == False and serializer.validated_data['usertype'] == 2:
+            validated_data =serializer.validated_data
+            if validated_data['status'] == False and validated_data['usertype'] == 2:
                 return Response({"status": False, "data": {"msg": "Please wait until admin allows you"}}, status=status.HTTP_423_LOCKED)
             else:
+                user = validated_data.pop('user')
+                user.tourplace = tourplace
+                user.save()
                 return Response({"status": True, "data": serializer.validated_data}, status=status.HTTP_200_OK)
         return Response({"status": False, "data": {"msg": "Invalid email or password"}}, status=status.HTTP_406_NOT_ACCEPTABLE)
     
